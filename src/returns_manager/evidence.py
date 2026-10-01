@@ -58,6 +58,27 @@ def add_evidence_reference(
     return check
 
 
+def attach_image_evidence(
+    checks: list[CheckResult],
+    image_refs: list[str],
+) -> list[CheckResult]:
+    """
+    Attach supplied image references to every check.
+
+    This makes each business check traceable back to the
+    images available during return analysis.
+    """
+
+    for check in checks:
+        for image_ref in image_refs:
+            add_evidence_reference(
+                check,
+                image_ref,
+            )
+
+    return checks
+
+
 def utc_now() -> str:
     """
     Return the current UTC timestamp in ISO-8601 format.
@@ -151,6 +172,22 @@ def _calculate_content_hash(
         canonical_json.encode("utf-8")
     ).hexdigest()
 
+def attach_image_evidence(
+    checks: list[CheckResult],
+    image_refs: list[str],
+) -> list[CheckResult]:
+    """
+    Attach all available image references to each check.
+
+    Existing references are preserved and duplicates are avoided.
+    """
+
+    for check in checks:
+        for image_ref in image_refs:
+            add_evidence_reference(check, image_ref)
+
+    return checks
+
 
 def build_evidence_record(
     case: ReturnCase,
@@ -167,6 +204,13 @@ def build_evidence_record(
     """
 
     final_overrides = overrides or []
+
+    # Attach the case images to each business check so that
+    # every decision can be traced back to its supporting images.
+    attach_image_evidence(
+        checks,
+        case.photo_refs,
+    )
 
     outcome = determine_overall_outcome(checks)
 

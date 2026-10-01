@@ -208,3 +208,45 @@ def test_evidence_record_preserves_override():
     assert record.overrides[0].reason == (
         "Operator found visible damage."
     )
+def test_attach_image_evidence_to_checks():
+    from src.returns_manager.evidence import attach_image_evidence
+
+    checks = [
+        make_check("identity", "PASS"),
+        make_check("completeness", "PASS"),
+        make_check("condition", "PASS"),
+    ]
+
+    image_refs = [
+        "image_01.jpg",
+        "image_02.jpg",
+    ]
+
+    result = attach_image_evidence(
+        checks,
+        image_refs,
+    )
+
+    for check in result:
+        assert check.evidence_refs == [
+            "image_01.jpg",
+            "image_02.jpg",
+        ]
+
+
+def test_attach_image_evidence_does_not_duplicate():
+    from src.returns_manager.evidence import attach_image_evidence
+
+    check = make_check("identity", "PASS")
+
+    check.evidence_refs = ["image_01.jpg"]
+
+    attach_image_evidence(
+        [check],
+        ["image_01.jpg", "image_02.jpg"],
+    )
+
+    assert check.evidence_refs == [
+        "image_01.jpg",
+        "image_02.jpg",
+    ]
