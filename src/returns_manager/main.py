@@ -1,3 +1,8 @@
+from .vision_pipeline import (
+    analyze_case_images,
+    apply_vision_observation,
+    aggregate_observations,
+)
 from .models import ReturnCase, CheckResult
 from .identity import assess_identity
 from .completeness import assess_completeness
@@ -12,6 +17,10 @@ def analyze_return(case: ReturnCase):
 
     Workflow:
 
+        Photos
+            ↓
+        Vision observations
+            ↓
         Identity
             ↓
         Completeness
@@ -22,6 +31,22 @@ def analyze_return(case: ReturnCase):
             ↓
         Evidence Record
     """
+
+    # ---------------------------------------------------------
+    # 0. Vision observations
+    # ---------------------------------------------------------
+
+    observations = analyze_case_images(case)
+
+    aggregated_observation = aggregate_observations(
+        observations
+    )
+
+    if aggregated_observation is not None:
+        apply_vision_observation(
+            case,
+            aggregated_observation,
+        )
 
     # ---------------------------------------------------------
     # 1. Identity
